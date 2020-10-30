@@ -25,6 +25,16 @@ void printMatrix(int mat[][BOARD_SIDE], const int SIZE){
     }
 }
 
+void printMatrix(const vector<vector<int>>& mat, const int SIZE){
+    for(int i = 0; i < SIZE; i++){
+        for(int j = 0; j < SIZE; j++){
+            cout << mat[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
 template <class T>
 void printVector(vector<T>& v){
     for(T el : v){
@@ -35,7 +45,9 @@ void printVector(vector<T>& v){
 
 struct State {
     State(){
+        mat.reserve(BOARD_SIDE);
         for(int i = 0; i < BOARD_SIDE; i++){
+            mat[i].reserve(BOARD_SIDE);
             for(int j = 0; j < BOARD_SIDE; j++){
                 mat[i][j] = 0;
             }
@@ -44,7 +56,22 @@ struct State {
     }
 
     State(int other[][BOARD_SIDE]){
+        mat.resize(BOARD_SIDE);
         for(int i = 0; i < BOARD_SIDE; i++){
+            mat[i].resize(BOARD_SIDE);
+            for(int j = 0; j < BOARD_SIDE; j++){
+                mat[i][j] = other[i][j];
+                if(other[i][j] == 0){
+                    zeroAt = {i, j};
+                }
+            }
+        }
+    }
+
+    State(vector<vector<int>> other){
+        mat.resize(BOARD_SIDE);
+        for(int i = 0; i < BOARD_SIDE; i++){
+            mat[i].resize(BOARD_SIDE);
             for(int j = 0; j < BOARD_SIDE; j++){
                 mat[i][j] = other[i][j];
                 if(other[i][j] == 0){
@@ -79,37 +106,21 @@ struct State {
         return result;
     }
 
-
-
-    /*bool operator==(const State& other)const{
-        cout << "==" << endl;
-        for(int i = 0; i < BOARD_SIDE; i++){
-            for(int j = 0; j < BOARD_SIDE; j++){
-                if(this->mat[i][j] != other.mat[i][j]){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }*/
+    bool operator<(const State& other)const {
+        return (this->sequence.size() + this->getManhattanDistance()) < (other.sequence.size() + other.getManhattanDistance());
+    }
 
     void solveAStar();
 
-    int mat[BOARD_SIDE][BOARD_SIDE];
+    vector<vector<int>> mat;
     pii zeroAt = {0, 0};
     vector<int> sequence;
 };
 
 
-struct Comp{
-    bool operator()(State s1, State s2)const {
-        return (s1.sequence.size() + s1.getManhattanDistance()) < (s2.sequence.size() + s2.getManhattanDistance());
-    }
-};
+set<vector<vector<int>>> used;
 
-set<State> used;
-
-bool isValidPos(int mat[][BOARD_SIDE], int x, int y){
+bool isValidPos(int x, int y){
     if(x < 0 or y < 0){
         return false;
     }
@@ -120,7 +131,7 @@ bool isValidPos(int mat[][BOARD_SIDE], int x, int y){
     return true;
 }
 
-State generateNewState(State& oldState, pii swapPos){
+State generateNewState(State oldState, pii swapPos){
     State newState(oldState.mat);
     newState.sequence = oldState.sequence;
     newState.sequence.push_back(newState.mat[swapPos.first][swapPos.second]);
@@ -131,15 +142,24 @@ State generateNewState(State& oldState, pii swapPos){
     return newState;
 }
 
+void pushNewState(priority_queue<State>& pq, State newState){
+    printMatrix(newState.mat, BOARD_SIDE);
+    cout << used.count(newState.mat) << "\n\n";
+    if(!used.count(newState.mat)){
+        pq.push(newState);
+        used.insert(newState.mat);
+    }
+}
+
 void State::solveAStar(){
-    priority_queue<State, vector<State>, Comp> pq;
+    priority_queue<State> pq;
     pq.push(*this);
-    used.insert(*this);
+    used.insert((*this).mat);
+    printMatrix((*this).mat, BOARD_SIDE);
+    cout << endl;
 
-    while(!pq.empty()){
+    while(pq.size() > 0){
         State t = pq.top();
-        //cout << "M dist: " << t.getManhattanDistance() << endl;
-
         if(t.getManhattanDistance() == 0){
             printMatrix(t.mat, BOARD_SIDE);
             printVector(t.sequence);
@@ -147,47 +167,25 @@ void State::solveAStar(){
         }
 
         printMatrix(t.mat, BOARD_SIDE);
-        cout << endl;
-        //printVector(t.sequence);
 
         int i = t.zeroAt.first,
             j = t.zeroAt.second;
-        //cout << i << " " << j << endl;
+        cout << i << " " << j << endl;
 
+        if(isValidPos(i - 1, j)){
+            pushNewState(pq, generateNewState(t, {i - 1, j}));
+        }
 
-        if(isValidPos(t.mat, i - 1, j)){
-            State newState = generateNewState(t, {i - 1, j});
-            //cout << "here1" << endl;
-            //printMatrix(newState.mat, BOARD_SIDE);
-            //cout << used.count(newState) << endl;
-            if(!used.count(newState)){
-                pq.push(newState);
-                used.insert(newState);
-            }
+        if(isValidPos(i + 1, j)){
+            pushNewState(pq, generateNewState(t, {i + 1, j}));
         }
-        if(isValidPos(t.mat, i + 1, j)){
-            State newState = generateNewState(t, {i + 1, j});
-            if(!used.count(newState)){
-                //cout << "here2" << endl;
-                pq.push(newState);
-                used.insert(newState);
-            }
+
+        if(isValidPos(i, j - 1)){
+            pushNewState(pq, generateNewState(t, {i, j - 1}));
         }
-        if(isValidPos(t.mat, i, j - 1)){
-            State newState = generateNewState(t, {i, j - 1});
-            //cout << "here3" << endl;
-            if(!used.count(newState)){
-                pq.push(newState);
-                used.insert(newState);
-            }
-        }
-        if(isValidPos(t.mat, i, j + 1)){
-            State newState = generateNewState(t, {i, j + 1});
-            //cout << "here4" << endl;
-            if(!used.count(newState)){
-                pq.push(newState);
-                used.insert(newState);
-            }
+
+        if(isValidPos(i, j + 1)){
+            pushNewState(pq, generateNewState(t, {i, j + 1}));
         }
 
         pq.pop();
@@ -233,12 +231,17 @@ void initTargetStates(){
 }
 
 int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
     initTargetStates();
     int test3[3][3] = {{0, 1, 3}, {4, 2, 5}, {7, 8, 6}};
     int test3_simple[3][3] = {{1, 2, 3}, {4, 5, 6}, {0, 7, 8}};
     int test3_hard[3][3] = {{1, 8, 2}, {0, 4, 3}, {7, 6, 5}};
+    int test3_harder[3][3] = {{0, 3, 4}, {7, 5, 8}, {6, 1, 2}}; // unsolvable
+    int test3_hardestPossible[3][3] = {{8, 6, 7}, {2, 5, 4}, {3, 0, 1}};
     // int test4[4][4] =
-    State a(test3_hard);
+    State a(test3_hardestPossible);
     a.solveAStar();
     //cout << a.getManhattanDistance() << endl;
 
