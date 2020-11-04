@@ -1,4 +1,9 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <string>
+#include <set>
+#include <queue>
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -13,7 +18,7 @@ using namespace std;
 typedef pair<int, int> pii;
 
 
-vector<int**> TARGET_STATES;
+vector<vector<vector<int>>> TARGET_STATES;
 const int BOARD_SIDE = 3;
 
 void printMatrix(int mat[][BOARD_SIDE], const int SIZE){
@@ -43,29 +48,22 @@ void printVector(vector<T>& v){
     cout << endl;
 }
 
-struct State {
-    State(){
-        mat.reserve(BOARD_SIDE);
-        for(int i = 0; i < BOARD_SIDE; i++){
-            mat[i].reserve(BOARD_SIDE);
-            for(int j = 0; j < BOARD_SIDE; j++){
-                mat[i][j] = 0;
-            }
-        }
+int globalID = 0;
 
-    }
+struct State {
 
     State(int other[][BOARD_SIDE]){
         mat.resize(BOARD_SIDE);
-        for(int i = 0; i < BOARD_SIDE; i++){
+        for (int i = 0; i < BOARD_SIDE; i++) {
             mat[i].resize(BOARD_SIDE);
-            for(int j = 0; j < BOARD_SIDE; j++){
+            for (int j = 0; j < BOARD_SIDE; j++) {
                 mat[i][j] = other[i][j];
-                if(other[i][j] == 0){
-                    zeroAt = {i, j};
+                if (other[i][j] == 0) {
+                    zeroAt = { i, j };
                 }
             }
         }
+        ID = globalID++;
     }
 
     State(vector<vector<int>> other){
@@ -79,6 +77,7 @@ struct State {
                 }
             }
         }
+        ID = globalID++;
     }
 
     int getManhattanDistance()const{
@@ -115,6 +114,7 @@ struct State {
     vector<vector<int>> mat;
     pii zeroAt = {0, 0};
     vector<int> sequence;
+    int ID = -1;
 };
 
 
@@ -143,6 +143,7 @@ State generateNewState(State oldState, pii swapPos){
 }
 
 void pushNewState(priority_queue<State>& pq, State newState){
+    cout << "new id: " << newState.ID << endl;
     printMatrix(newState.mat, BOARD_SIDE);
     cout << "in set: " << used.count(newState.mat) << "\n\n";
     cout << "dist: " << newState.getManhattanDistance() + newState.sequence.size() << endl;
@@ -169,6 +170,7 @@ void State::solveAStar(){
             break;
         }
 
+        cout << "ID: " << t.ID << endl;
         printMatrix(t.mat, BOARD_SIDE);
 
         int i = t.zeroAt.first,
@@ -199,14 +201,14 @@ void State::solveAStar(){
 }
 
 void initTargetStates(){
-    TARGET_STATES.reserve(5);
-    TARGET_STATES[3] = new int*[3];
+    TARGET_STATES.resize(5);
     int cnt = 1;
     for(int i = 0; i < 3; i++){
-        TARGET_STATES[3][i] = new int[3];
+        vector<int> temp;
         for(int j = 0; j < 3; j++){
-            TARGET_STATES[3][i][j] = (cnt++) % 9;
+            temp.push_back((cnt++) % 9);
         }
+        TARGET_STATES[3].push_back(temp);
     }
 
     /*for(int i = 0; i < 3; i++){
@@ -216,17 +218,17 @@ void initTargetStates(){
         cout << endl;
     }*/
 
-    TARGET_STATES[4] = new int*[4];
     cnt = 1;
-    for(int i = 0; i < 4; i++){
-        TARGET_STATES[4][i] = new int[3];
-        for(int j = 0; j < 4; j++){
-            TARGET_STATES[4][i][j] = (cnt++) % 16;
+    for (int i = 0; i < 4; i++) {
+        vector<int> temp;
+        for (int j = 0; j < 4; j++) {
+            temp.push_back((cnt++) % 16);
         }
+        TARGET_STATES[4].push_back(temp);
     }
 
-    /*
-    for(int i = 0; i < 4; i++){
+    
+    /*for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
             cout << TARGET_STATES[4][i][j] << " ";
         }
