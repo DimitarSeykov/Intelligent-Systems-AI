@@ -63,6 +63,7 @@ struct State {
                 }
             }
         }
+        this->heuristicDistance = getManhattanDistance();
         ID = globalID++;
     }
 
@@ -77,6 +78,7 @@ struct State {
                 }
             }
         }
+        this->heuristicDistance = getManhattanDistance();
         ID = globalID++;
     }
 
@@ -106,7 +108,7 @@ struct State {
     }
 
     bool operator<(const State& other)const {
-        return (this->sequence.size() + this->getManhattanDistance()) < (other.sequence.size() + other.getManhattanDistance());
+        return this->heuristicDistance > other.heuristicDistance;
     }
 
     void solveAStar();
@@ -114,11 +116,23 @@ struct State {
     vector<vector<int>> mat;
     pii zeroAt = {0, 0};
     vector<int> sequence;
+    int heuristicDistance = 0;
     int ID = -1;
 };
 
 
-set<vector<vector<int>>> used;
+set<string> used;
+
+string toString(vector<vector<int>>& v) {
+    string res = "";
+    for (auto el : v) {
+        for (int i : el) {
+            res += to_string(i);
+            res += ',';
+        }
+    }
+    return res;
+}
 
 bool isValidPos(int x, int y){
     if(x < 0 or y < 0){
@@ -138,6 +152,7 @@ State generateNewState(State oldState, pii swapPos){
     pii zeroAt = oldState.zeroAt;
     swap(newState.mat[zeroAt.first][zeroAt.second], newState.mat[swapPos.first][swapPos.second]);
     newState.zeroAt = swapPos;
+    newState.heuristicDistance = newState.getManhattanDistance() + newState.sequence.size();
 
     return newState;
 }
@@ -145,11 +160,11 @@ State generateNewState(State oldState, pii swapPos){
 void pushNewState(priority_queue<State>& pq, State newState){
     cout << "new id: " << newState.ID << endl;
     printMatrix(newState.mat, BOARD_SIDE);
-    cout << "in set: " << used.count(newState.mat) << "\n\n";
+    cout << "in set: " << used.count(toString(newState.mat)) << "\n\n";
     cout << "dist: " << newState.getManhattanDistance() + newState.sequence.size() << endl;
-    if(!used.count(newState.mat)){
+    if(!used.count(toString(newState.mat))){
         pq.push(newState);
-        used.insert(newState.mat);
+        used.insert(toString(newState.mat));
     }
     cout << "pq size: " <<  pq.size() <<  endl;
 }
@@ -157,7 +172,7 @@ void pushNewState(priority_queue<State>& pq, State newState){
 void State::solveAStar(){
     priority_queue<State> pq;
     pq.push(*this);
-    used.insert((*this).mat);
+    used.insert(toString((*this).mat));
     printMatrix((*this).mat, BOARD_SIDE);
     cout << endl;
 
@@ -172,10 +187,10 @@ void State::solveAStar(){
 
         cout << "ID: " << t.ID << endl;
         printMatrix(t.mat, BOARD_SIDE);
-
         int i = t.zeroAt.first,
             j = t.zeroAt.second;
         // cout << i << " " << j << endl;
+        pq.pop();
         cout << "---------considered-----------\n\n";
 
         if(isValidPos(i - 1, j)){
@@ -194,7 +209,9 @@ void State::solveAStar(){
             pushNewState(pq, generateNewState(t, {i, j + 1}));
         }
         cout << "-----------------------------\n\n" << endl;
-        pq.pop();
+        
+        //cout << "size ater pop: " << pq.size() << endl;
+        //cout << "-----------------------------\n\n" << endl;
 
     }
 
