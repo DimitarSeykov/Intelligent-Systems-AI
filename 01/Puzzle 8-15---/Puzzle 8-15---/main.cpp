@@ -121,18 +121,8 @@ struct State {
 };
 
 
-set<string> used;
+set<vector<vector<int>>> used;
 
-string toString(vector<vector<int>>& v) {
-    string res = "";
-    for (auto el : v) {
-        for (int i : el) {
-            res += to_string(i);
-            res += ',';
-        }
-    }
-    return res;
-}
 
 bool isValidPos(int x, int y){
     if(x < 0 or y < 0){
@@ -160,11 +150,11 @@ State generateNewState(State oldState, pii swapPos){
 void pushNewState(priority_queue<State>& pq, State newState){
     cout << "new id: " << newState.ID << endl;
     printMatrix(newState.mat, BOARD_SIDE);
-    cout << "in set: " << used.count(toString(newState.mat)) << "\n\n";
+    cout << "in set: " << used.count(newState.mat) << "\n\n";
     cout << "dist: " << newState.getManhattanDistance() + newState.sequence.size() << endl;
-    if(!used.count(toString(newState.mat))){
+    if(!used.count(newState.mat)){
         pq.push(newState);
-        used.insert(toString(newState.mat));
+        used.insert(newState.mat);
     }
     cout << "pq size: " <<  pq.size() <<  endl;
 }
@@ -172,7 +162,7 @@ void pushNewState(priority_queue<State>& pq, State newState){
 void State::solveAStar(){
     priority_queue<State> pq;
     pq.push(*this);
-    used.insert(toString((*this).mat));
+    used.insert((*this).mat);
     printMatrix((*this).mat, BOARD_SIDE);
     cout << endl;
 
