@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <queue>
+#include <chrono>
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -16,9 +17,10 @@
 using namespace std;
 
 typedef pair<int, int> pii;
+typedef vector<vector<int>> vvi;
 
 
-vector<vector<vector<int>>> TARGET_STATES;
+vector<vvi> TARGET_STATES;
 const int BOARD_SIDE = 3;
 
 void printMatrix(int mat[][BOARD_SIDE], const int SIZE){
@@ -30,7 +32,7 @@ void printMatrix(int mat[][BOARD_SIDE], const int SIZE){
     }
 }
 
-void printMatrix(const vector<vector<int>>& mat, const int SIZE){
+void printMatrix(const vvi& mat, const int SIZE){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
             cout << mat[i][j] << " ";
@@ -67,7 +69,7 @@ struct State {
         ID = globalID++;
     }
 
-    State(vector<vector<int>> other){
+    State(vvi other){
         mat.resize(BOARD_SIDE);
         for(int i = 0; i < BOARD_SIDE; i++){
             mat[i].resize(BOARD_SIDE);
@@ -111,17 +113,15 @@ struct State {
         return this->heuristicDistance > other.heuristicDistance;
     }
 
-    void solveAStar();
+    bool solveAStar(int& threshold);
+    void solveIterativeDeepening();
 
-    vector<vector<int>> mat;
+    vvi mat;
     pii zeroAt = {0, 0};
     vector<int> sequence;
     int heuristicDistance = 0;
     int ID = -1;
 };
-
-
-set<vector<vector<int>>> used;
 
 
 bool isValidPos(int x, int y){
@@ -147,65 +147,84 @@ State generateNewState(State oldState, pii swapPos){
     return newState;
 }
 
-void pushNewState(priority_queue<State>& pq, State newState){
-    cout << "new id: " << newState.ID << endl;
-    printMatrix(newState.mat, BOARD_SIDE);
-    cout << "in set: " << used.count(newState.mat) << "\n\n";
-    cout << "dist: " << newState.getManhattanDistance() + newState.sequence.size() << endl;
-    if(!used.count(newState.mat)){
+void pushNewState(priority_queue<State>& pq, set<vvi>& used, int& threshold, State newState){
+    //cout << "new id: " << newState.ID << endl;
+    //printMatrix(newState.mat, BOARD_SIDE);
+    //cout << "in set: " << used.count(newState.mat) << "\n\n";
+    //cout << "dist: " << newState.getManhattanDistance() + newState.sequence.size() << endl;
+    if(!used.count(newState.mat) and newState.heuristicDistance <= threshold){
         pq.push(newState);
         used.insert(newState.mat);
     }
-    cout << "pq size: " <<  pq.size() <<  endl;
+   // cout << "pq size: " <<  pq.size() <<  endl;
 }
 
-void State::solveAStar(){
+bool State::solveAStar(int& threshold){
     priority_queue<State> pq;
     pq.push(*this);
+    set<vvi> used;
     used.insert((*this).mat);
-    printMatrix((*this).mat, BOARD_SIDE);
-    cout << endl;
+    //printMatrix((*this).mat, BOARD_SIDE);
+    //cout << endl;
+    bool solutionFound = false;
 
-    while(!pq.empty()){
+    while(not pq.empty()){
         State t = pq.top();
 
         if(t.getManhattanDistance() == 0){
+            solutionFound = true;
             printMatrix(t.mat, BOARD_SIDE);
+            cout << t.sequence.size() << ": ";
             printVector(t.sequence);
+            cout << "ID: " << t.ID << endl;
+            cout << "current PQ size: " << pq.size() << endl;
             break;
         }
 
-        cout << "ID: " << t.ID << endl;
-        printMatrix(t.mat, BOARD_SIDE);
+        //cout << "ID: " << t.ID << endl;
+        //printMatrix(t.mat, BOARD_SIDE);
         int i = t.zeroAt.first,
             j = t.zeroAt.second;
         // cout << i << " " << j << endl;
         pq.pop();
-        cout << "---------considered-----------\n\n";
+        //cout << "---------considered-----------\n\n";
 
         if(isValidPos(i - 1, j)){
-            pushNewState(pq, generateNewState(t, {i - 1, j}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i - 1, j}));
         }
 
         if(isValidPos(i + 1, j)){
-            pushNewState(pq, generateNewState(t, {i + 1, j}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i + 1, j}));
         }
 
         if(isValidPos(i, j - 1)){
-            pushNewState(pq, generateNewState(t, {i, j - 1}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i, j - 1}));
         }
 
         if(isValidPos(i, j + 1)){
-            pushNewState(pq, generateNewState(t, {i, j + 1}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i, j + 1}));
         }
-        cout << "-----------------------------\n\n" << endl;
+        //cout << "-----------------------------\n\n" << endl;
         
         //cout << "size ater pop: " << pq.size() << endl;
         //cout << "-----------------------------\n\n" << endl;
 
     }
 
+    return solutionFound;
 }
+
+
+void State::solveIterativeDeepening() {
+    const int STEP = 5;
+    bool solutionFound = false;
+    int threshold = 15;
+    while (not solutionFound) {
+        solutionFound = solveAStar(threshold);
+        threshold += STEP;
+    }
+}
+
 
 void initTargetStates(){
     TARGET_STATES.resize(5);
@@ -249,14 +268,22 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     initTargetStates();
+    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     int test3[3][3] = {{0, 1, 3}, {4, 2, 5}, {7, 8, 6}};
     int test3_simple[3][3] = {{1, 2, 3}, {4, 5, 6}, {0, 7, 8}};
     int test3_hard[3][3] = {{1, 8, 2}, {0, 4, 3}, {7, 6, 5}};
     int test3_harder[3][3] = {{0, 3, 4}, {7, 5, 8}, {6, 1, 2}}; // unsolvable
-    int test3_hardestPossible[3][3] = {{8, 6, 7}, {2, 5, 4}, {3, 0, 1}};
+    int test3_21[3][3] = { {6, 5, 3}, {2, 4, 8}, {7, 0, 1} };
+    int test3_31[3][3] = {{8, 6, 7}, {2, 5, 4}, {3, 0, 1}};
     // int test4[4][4] =
-    State a(test3_hardestPossible);
-    a.solveAStar();
+    State a(test3_31);
+    printMatrix(a.mat, BOARD_SIDE);
+    cout << endl;
+
+    a.solveIterativeDeepening();
+
+    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+    cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
     //cout << a.getManhattanDistance() << endl;
 
 
