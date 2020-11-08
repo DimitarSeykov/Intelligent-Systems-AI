@@ -118,7 +118,7 @@ struct State {
 
     vvi mat;
     pii zeroAt = {0, 0};
-    vector<int> sequence;
+    vector<string> sequence;
     int heuristicDistance = 0;
     int ID = -1;
 };
@@ -135,10 +135,10 @@ bool isValidPos(int x, int y){
     return true;
 }
 
-State generateNewState(State oldState, pii swapPos){
+State generateNewState(State oldState, pii swapPos, const string direction){
     State newState(oldState.mat);
     newState.sequence = oldState.sequence;
-    newState.sequence.push_back(newState.mat[swapPos.first][swapPos.second]);
+    newState.sequence.push_back(direction);
     pii zeroAt = oldState.zeroAt;
     swap(newState.mat[zeroAt.first][zeroAt.second], newState.mat[swapPos.first][swapPos.second]);
     newState.zeroAt = swapPos;
@@ -190,19 +190,19 @@ bool State::solveAStar(int& threshold){
         //cout << "---------considered-----------\n\n";
 
         if(isValidPos(i - 1, j)){
-            pushNewState(pq, used, threshold, generateNewState(t, {i - 1, j}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i - 1, j}, "down"));
         }
 
         if(isValidPos(i + 1, j)){
-            pushNewState(pq, used, threshold, generateNewState(t, {i + 1, j}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i + 1, j}, "up"));
         }
 
         if(isValidPos(i, j - 1)){
-            pushNewState(pq, used, threshold, generateNewState(t, {i, j - 1}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i, j - 1}, "right"));
         }
 
         if(isValidPos(i, j + 1)){
-            pushNewState(pq, used, threshold, generateNewState(t, {i, j + 1}));
+            pushNewState(pq, used, threshold, generateNewState(t, {i, j + 1}, "left"));
         }
         //cout << "-----------------------------\n\n" << endl;
         
@@ -218,7 +218,7 @@ bool State::solveAStar(int& threshold){
 void State::solveIterativeDeepening() {
     const int STEP = 5;
     bool solutionFound = false;
-    int threshold = 15;
+    int threshold = 30;
     while (not solutionFound) {
         solutionFound = solveAStar(threshold);
         threshold += STEP;
@@ -272,11 +272,13 @@ int main(){
     int test3[3][3] = {{0, 1, 3}, {4, 2, 5}, {7, 8, 6}};
     int test3_simple[3][3] = {{1, 2, 3}, {4, 5, 6}, {0, 7, 8}};
     int test3_hard[3][3] = {{1, 8, 2}, {0, 4, 3}, {7, 6, 5}};
-    int test3_harder[3][3] = {{0, 3, 4}, {7, 5, 8}, {6, 1, 2}}; // unsolvable
+    int test3_unsolvable[3][3] = {{0, 3, 4}, {7, 5, 8}, {6, 1, 2}}; // unsolvable
     int test3_21[3][3] = { {6, 5, 3}, {2, 4, 8}, {7, 0, 1} };
     int test3_31[3][3] = {{8, 6, 7}, {2, 5, 4}, {3, 0, 1}};
-    // int test4[4][4] =
-    State a(test3_31);
+    int test4_11[4][4] = { {2, 3, 4, 8}, {1, 6, 7, 12}, {5, 10, 11, 0}, {9, 13, 14, 15} };
+    int test4_40[4][4] = { {5, 6, 3, 4}, {8, 0, 1, 15}, {10, 7, 2, 11}, {12, 9, 14, 13} };
+    int test4_66[4][4] = { {14, 15, 8, 12}, {10, 11, 9, 13}, {2, 6, 5, 1}, {3, 7, 4, 0} };
+    State a(test3_simple);
     printMatrix(a.mat, BOARD_SIDE);
     cout << endl;
 
@@ -284,7 +286,6 @@ int main(){
 
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
     cout << "Time difference = " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
-    //cout << a.getManhattanDistance() << endl;
 
 
 }
