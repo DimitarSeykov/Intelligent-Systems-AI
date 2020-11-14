@@ -9,12 +9,12 @@
 
 using namespace std;
 
-const int BOARD_SIDE = 100;
+const int BOARD_SIDE = 10000;
 
 typedef vector<vector<int>> vvi;
 typedef pair<int, int> pii;
 
-const int MOVES_FOR_RESTART = 70;
+const int MOVES_FOR_RESTART = 80;
 
 template <class T>
 void printVector(vector<T>& v) {
@@ -60,7 +60,7 @@ public:
                 }
             }
 
-            int idx = rand() % (candidates.size()) + 0;
+            int idx = rand() % (candidates.size());
             int pos = candidates[idx];
 
             queens[i] = pos;
@@ -68,9 +68,9 @@ public:
 
             updateConflicts(i, pos, 1);
         }
-
-        // printMatrix(board);
-        // cout << getTotalConflicts() << endl;
+        //cout << "initial conflicts: " << getTotalConflicts() << endl;
+        //cout << "initial board: " << endl;
+        //printMatrix(board);
 
         // printVector(queens);
         // printVector(conflictsColumns);
@@ -85,19 +85,23 @@ public:
     }
 
     void makeMove() {
-        int maxConflicts = -1;
+        int maxConflicts = 0;
         vector<int> candidates;
         for (int i = 0; i < queens.size(); i++) {
             int currentConflicts = getConflictsAtPosition(i, queens[i]);
             if (currentConflicts > maxConflicts) {
                 maxConflicts = currentConflicts;
-                if (currentConflicts > 3) { // because of 1s in conflict arrays
-                    candidates.push_back(i);
-                }
             }
         }
 
-        int worstQueenIdx = candidates[rand() % candidates.size() + 0];
+        for(int i = 0; i < queens.size(); i++){
+            int currentConflicts = getConflictsAtPosition(i, queens[i]);
+            if(currentConflicts == maxConflicts){
+                candidates.push_back(i);
+            }
+        }
+
+        int worstQueenIdx = candidates[rand() % candidates.size()];
 
         int minConflicts = INT_MAX;
         vector<int> moveCandidates;
@@ -110,8 +114,10 @@ public:
         }
 
 
-        int movePos = moveCandidates[rand() % moveCandidates.size() + 0];
+        int movePos = moveCandidates[rand() % moveCandidates.size()];
+        // cout << "candidates queens: " << candidates.size() << endl;
         // cout << "worstQueen: " << worstQueenIdx << endl;
+        // cout << "moving candidates: " << moveCandidates.size() << endl;
         // cout << "move position: " << movePos << endl;
 
         updateConflicts(worstQueenIdx, queens[worstQueenIdx], -1);
@@ -120,8 +126,14 @@ public:
         swap(board[worstQueenIdx][queens[worstQueenIdx]], board[worstQueenIdx][movePos]);
         queens[worstQueenIdx] = movePos;
 
-        // cout << "conflicts: " << getTotalConflicts() << endl;
-        //printMatrix(board);
+        // cout << "conflicts after move: " << getTotalConflicts() << endl;
+        // printVector(queens);
+        // printVector(conflictsColumns);
+        // printVector(conflictsMainDiag);
+        // printVector(conflictsSecDiag);
+        // cout << endl;
+        // printMatrix(board);
+        // cout << endl;
     }
 
     void solveRandomRestart(){
@@ -131,6 +143,8 @@ public:
             if (moves > MOVES_FOR_RESTART) {
                 generateInitialBoard();
                 restarts++;
+                //cout << moves <<  endl;
+                // cout << "conflicts: " << getTotalConflicts() << endl;
                 moves = 0;
                 continue;
             }
@@ -165,7 +179,7 @@ private:
     int getConflictsAtPosition(int x, int y) {
         return conflictsColumns[y] +
                conflictsMainDiag[getMainDiag(x, y)] +
-               conflictsSecDiag[getSecDiag(x, y)];
+               conflictsSecDiag[getSecDiag(x, y)] - 3;
     }
 
     void initSizes() {
@@ -205,6 +219,8 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
+
+    // freopen("output.txt", "w", stdout);
 
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     Game game;
