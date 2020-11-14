@@ -14,7 +14,7 @@ const int BOARD_SIDE = 10000;
 typedef vector<vector<int>> vvi;
 typedef pair<int, int> pii;
 
-const int MOVES_FOR_RESTART = 80;
+const int MOVES_FOR_RESTART = 70;
 
 template <class T>
 void printVector(vector<T>& v) {
@@ -109,6 +109,12 @@ public:
             int currentConflicts = getConflictsAtPosition(worstQueenIdx, i);
             if (currentConflicts < minConflicts) {
                 minConflicts = currentConflicts;
+            }
+        }
+
+        for (int i = 0; i < BOARD_SIDE; i++) {
+            int currentConflicts = getConflictsAtPosition(worstQueenIdx, i);
+            if (currentConflicts == minConflicts) {
                 moveCandidates.push_back(i);
             }
         }
