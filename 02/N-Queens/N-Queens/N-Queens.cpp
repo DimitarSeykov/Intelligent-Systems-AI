@@ -82,7 +82,7 @@ public:
             int pos = (zeros.size() < CAP_ZEROS) ? candidates[rand() % candidates.size()] : zeros[rand() % zeros.size()];
 
             queens[i] = pos;
-            board[i][pos] = 1;
+            //board[i][pos] = 1;
 
             updateConflicts(i, pos, 1);
         }
@@ -91,7 +91,7 @@ public:
         cout << "Initialization took: " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
         //cout << "initial conflicts: " << getTotalConflicts() << endl;
         //cout << "initial board: " << endl;
-        //printMatrix(board);
+        //printBoard();
 
         // printVector(queens);
         // printVector(conflictsColumns);
@@ -150,7 +150,7 @@ public:
         updateConflicts(worstQueenIdx, queens[worstQueenIdx], -1);
         updateConflicts(worstQueenIdx, movePos, 1);
 
-        swap(board[worstQueenIdx][queens[worstQueenIdx]], board[worstQueenIdx][movePos]);
+        //swap(board[worstQueenIdx][queens[worstQueenIdx]], board[worstQueenIdx][movePos]);
         queens[worstQueenIdx] = movePos;
 
         // cout << "conflicts after move: " << getTotalConflicts() << endl;
@@ -159,7 +159,7 @@ public:
         // printVector(conflictsMainDiag);
         // printVector(conflictsSecDiag);
         // cout << endl;
-        // printMatrix(board);
+        // printBoard();
         // cout << endl;
     }
 
@@ -177,19 +177,19 @@ public:
             }
             // cout << "moves " << moves << endl;
             makeMove();
-            //printMatrix(game.board);
+            //printBoard();
             moves++;
         }
         cout << "moves: " << moves << endl;
         cout << "restarts: " << restarts << endl;
         if (BOARD_SIDE <= 15) {
-            printMatrix(board);
+            printBoard();
         }
     }
 
 
 private:
-    vvi board;
+    //vvi board;
     vector<int> queens;
     vector<int> conflictsMainDiag;
     vector<int> conflictsSecDiag;
@@ -210,10 +210,11 @@ private:
     }
 
     void initSizes() {
+        /*
         board.resize(BOARD_SIDE);
         for (int i = 0; i < BOARD_SIDE; i++) {
             board[i].assign(BOARD_SIDE, 0);
-        }
+        }*/
 
         queens.assign(BOARD_SIDE, 0);
         conflictsColumns.assign(BOARD_SIDE, 0);
@@ -236,6 +237,19 @@ private:
         conflictsColumns[y] += factor;
         conflictsMainDiag[getMainDiag(x, y)] += factor;
         conflictsSecDiag[getSecDiag(x, y)] += factor;
+    }
+
+    void printBoard(){
+        for(int i = 0; i < BOARD_SIDE; i++){
+            for(int j = 0; j < BOARD_SIDE; j++){
+                if(j == queens[i]){
+                    cout << 1 << " ";
+                } else {
+                    cout << 0 << " ";
+                }
+            }
+            cout << endl;
+        }
     }
 };
 
