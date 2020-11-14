@@ -5,16 +5,18 @@
 #include <limits.h>
 #include <utility>
 #include <chrono>
-
+#include <math.h>
 
 using namespace std;
 
 const int BOARD_SIDE = 10000;
+const int SAMPLE_SIZE = 25 * log2(BOARD_SIDE);
+const int CAP_ZEROS = 2 * log2(BOARD_SIDE);
 
 typedef vector<vector<int>> vvi;
 typedef pair<int, int> pii;
 
-const int MOVES_FOR_RESTART = 70;
+const int MOVES_FOR_RESTART = 250;
 
 template <class T>
 void printVector(vector<T>& v) {
@@ -41,33 +43,52 @@ public:
 
         initSizes();
 
+        chrono::steady_clock::time_point begin = chrono::steady_clock::now();
         for (int i = 0; i < BOARD_SIDE; i++) {
 
             vector<int> candidates;
             vector<int> conflitsCurrentRow(BOARD_SIDE);
             int minConflicts = INT_MAX;
-            for (int j = 0; j < BOARD_SIDE; j++) {
-                int conflicts = getConflictsAtPosition(i, j);
-                conflitsCurrentRow[j] = conflicts;
+
+
+            vector<int> samples;
+            samples.resize(SAMPLE_SIZE);
+            vector<int> zeros;
+            for (int j = 0; j < SAMPLE_SIZE; j++) {
+                int sampleIdx = rand() % BOARD_SIDE;
+                samples[j] = sampleIdx;
+                int conflicts = getConflictsAtPosition(i, samples[j]);
+                if (conflicts == -3) { // because of the way getConflicts.. is implemented
+                    zeros.push_back(samples[j]);
+                    if (zeros.size() >= CAP_ZEROS) {
+                        break;
+                    }
+                }
                 if (conflicts < minConflicts) {
                     minConflicts = conflicts;
                 }
             }
 
-            for (int j = 0; j < conflitsCurrentRow.size(); j++) {
-                if (conflitsCurrentRow[j] == minConflicts) {
-                    candidates.push_back(j);
+            if (zeros.size() < CAP_ZEROS) {
+                for (int j = 0; j < samples.size(); j++) {
+                    int conflicts = getConflictsAtPosition(i, samples[j]);
+                    if (conflicts == minConflicts) {
+                        candidates.push_back(samples[j]);
+                    }
                 }
             }
 
-            int idx = rand() % (candidates.size());
-            int pos = candidates[idx];
+
+            int pos = (zeros.size() < CAP_ZEROS) ? candidates[rand() % candidates.size()] : zeros[rand() % zeros.size()];
 
             queens[i] = pos;
             board[i][pos] = 1;
 
             updateConflicts(i, pos, 1);
         }
+
+        chrono::steady_clock::time_point end = chrono::steady_clock::now();
+        cout << "Initialization took: " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
         //cout << "initial conflicts: " << getTotalConflicts() << endl;
         //cout << "initial board: " << endl;
         //printMatrix(board);
@@ -80,8 +101,8 @@ public:
 
     int getTotalConflicts() {
         return getConflictFromDirecton(conflictsMainDiag) +
-               getConflictFromDirecton(conflictsSecDiag) +
-               getConflictFromDirecton(conflictsColumns);
+            getConflictFromDirecton(conflictsSecDiag) +
+            getConflictFromDirecton(conflictsColumns);
     }
 
     void makeMove() {
@@ -94,9 +115,9 @@ public:
             }
         }
 
-        for(int i = 0; i < queens.size(); i++){
+        for (int i = 0; i < queens.size(); i++) {
             int currentConflicts = getConflictsAtPosition(i, queens[i]);
-            if(currentConflicts == maxConflicts){
+            if (currentConflicts == maxConflicts) {
                 candidates.push_back(i);
             }
         }
@@ -142,14 +163,14 @@ public:
         // cout << endl;
     }
 
-    void solveRandomRestart(){
+    void solveRandomRestart() {
         int moves = 0;
         int restarts = 0;
         while (getTotalConflicts() > 0) {
             if (moves > MOVES_FOR_RESTART) {
                 generateInitialBoard();
                 restarts++;
-                //cout << moves <<  endl;
+                // cout << moves <<  endl;
                 // cout << "conflicts: " << getTotalConflicts() << endl;
                 moves = 0;
                 continue;
@@ -161,7 +182,7 @@ public:
         }
         cout << "moves: " << moves << endl;
         cout << "restarts: " << restarts << endl;
-        if(BOARD_SIDE <= 15){
+        if (BOARD_SIDE <= 15) {
             printMatrix(board);
         }
     }
@@ -184,8 +205,8 @@ private:
 
     int getConflictsAtPosition(int x, int y) {
         return conflictsColumns[y] +
-               conflictsMainDiag[getMainDiag(x, y)] +
-               conflictsSecDiag[getSecDiag(x, y)] - 3;
+            conflictsMainDiag[getMainDiag(x, y)] +
+            conflictsSecDiag[getSecDiag(x, y)] - 3;
     }
 
     void initSizes() {
