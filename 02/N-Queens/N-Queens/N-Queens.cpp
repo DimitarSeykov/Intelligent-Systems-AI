@@ -16,26 +16,7 @@ const int CAP_ZEROS = 2 * log2(BOARD_SIDE);
 typedef vector<vector<int>> vvi;
 typedef pair<int, int> pii;
 
-const int MOVES_FOR_RESTART = 250;
-
-template <class T>
-void printVector(vector<T>& v) {
-    for (T el : v) {
-        cout << el << " ";
-    }
-    cout << endl;
-}
-
-template <class T>
-void printMatrix(vector<vector<T>>& v) {
-    for (auto row : v) {
-        for (T el : row) {
-            cout << el << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
-}
+const int MOVES_FOR_RESTART = 350;
 
 class Game {
 public:
@@ -58,7 +39,7 @@ public:
                 int sampleIdx = rand() % BOARD_SIDE;
                 samples[j] = sampleIdx;
                 int conflicts = getConflictsAtPosition(i, samples[j]);
-                if (conflicts == -3) { // because of the way getConflicts.. is implemented
+                if (conflicts == -3) { // because of the way getConflictsAtPosition is implemented
                     zeros.push_back(samples[j]);
                     if (zeros.size() >= CAP_ZEROS) {
                         break;
@@ -82,21 +63,12 @@ public:
             int pos = (zeros.size() < CAP_ZEROS) ? candidates[rand() % candidates.size()] : zeros[rand() % zeros.size()];
 
             queens[i] = pos;
-            //board[i][pos] = 1;
 
             updateConflicts(i, pos, 1);
         }
 
         chrono::steady_clock::time_point end = chrono::steady_clock::now();
         cout << "Initialization took: " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "[ms]" << endl;
-        //cout << "initial conflicts: " << getTotalConflicts() << endl;
-        //cout << "initial board: " << endl;
-        //printBoard();
-
-        // printVector(queens);
-        // printVector(conflictsColumns);
-        // printVector(conflictsMainDiag);
-        // printVector(conflictsSecDiag);
     }
 
     int getTotalConflicts() {
@@ -142,25 +114,12 @@ public:
 
 
         int movePos = moveCandidates[rand() % moveCandidates.size()];
-        // cout << "candidates queens: " << candidates.size() << endl;
-        // cout << "worstQueen: " << worstQueenIdx << endl;
-        // cout << "moving candidates: " << moveCandidates.size() << endl;
-        // cout << "move position: " << movePos << endl;
 
         updateConflicts(worstQueenIdx, queens[worstQueenIdx], -1);
         updateConflicts(worstQueenIdx, movePos, 1);
 
-        //swap(board[worstQueenIdx][queens[worstQueenIdx]], board[worstQueenIdx][movePos]);
         queens[worstQueenIdx] = movePos;
 
-        // cout << "conflicts after move: " << getTotalConflicts() << endl;
-        // printVector(queens);
-        // printVector(conflictsColumns);
-        // printVector(conflictsMainDiag);
-        // printVector(conflictsSecDiag);
-        // cout << endl;
-        // printBoard();
-        // cout << endl;
     }
 
     void solveRandomRestart() {
@@ -170,14 +129,10 @@ public:
             if (moves > MOVES_FOR_RESTART) {
                 generateInitialBoard();
                 restarts++;
-                // cout << moves <<  endl;
-                // cout << "conflicts: " << getTotalConflicts() << endl;
                 moves = 0;
                 continue;
             }
-            // cout << "moves " << moves << endl;
             makeMove();
-            //printBoard();
             moves++;
         }
         cout << "moves: " << moves << endl;
@@ -189,7 +144,6 @@ public:
 
 
 private:
-    //vvi board;
     vector<int> queens;
     vector<int> conflictsMainDiag;
     vector<int> conflictsSecDiag;
@@ -210,12 +164,6 @@ private:
     }
 
     void initSizes() {
-        /*
-        board.resize(BOARD_SIDE);
-        for (int i = 0; i < BOARD_SIDE; i++) {
-            board[i].assign(BOARD_SIDE, 0);
-        }*/
-
         queens.assign(BOARD_SIDE, 0);
         conflictsColumns.assign(BOARD_SIDE, 0);
         conflictsMainDiag.assign(2 * BOARD_SIDE - 1, 0);
@@ -243,9 +191,9 @@ private:
         for(int i = 0; i < BOARD_SIDE; i++){
             for(int j = 0; j < BOARD_SIDE; j++){
                 if(j == queens[i]){
-                    cout << 1 << " ";
+                    cout << "X ";
                 } else {
-                    cout << 0 << " ";
+                    cout << "- ";
                 }
             }
             cout << endl;
@@ -260,8 +208,6 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
-
-    // freopen("output.txt", "w", stdout);
 
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     Game game;
