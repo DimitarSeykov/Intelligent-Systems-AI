@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <math.h>
 #include <set>
+#include <unordered_map>
 
 
 using namespace std;
@@ -43,7 +44,15 @@ public:
         for (int i = 0; i < N; i++) {
             int x = getRandomNumber(SIZE),
                 y = getRandomNumber(SIZE);
-            points.push_back({ x, y });
+            points.push_back({x, y});
+        }
+
+        for (int i = 0; i < points.size(); i++) {
+            for (int j = 0; j < points.size(); j++) {
+                if (i != j) {
+                    memo[{ points[i], points[j]}] = getDistance(points[i], points[j]);
+                }
+            }
         }
 
         printPoints(points);
@@ -91,17 +100,21 @@ public:
         vvp selected;
         auto it = generation.begin();
         int cnt = 0;
+        // take the best SELECTION_SIZE
         while (cnt < SELECTION_SIZE and it != generation.end()) {
             selected.push_back((*it).second);
             it++;
             cnt++;
         }
 
+        spvp newGeneration;
         it = generation.begin();
+        // take SELECTION_SIZE from the rest at random
         for (int i = 0; i < SELECTION_SIZE; i++) {
             int idx = getRandomNumber(GEN_SIZE - SELECTION_SIZE - 1, SELECTION_SIZE);
             advance(it, idx);
             selected.push_back((*it).second);
+            newGeneration.insert(*it);
             advance(it, idx * (-1));
         }
 
@@ -113,12 +126,13 @@ public:
     }
 
     vector<pii> points;
+    unordered_map<pair<pii, pii>, double> memo;
 
 private:
     double getTotalDistance(const vector<pii>& v) {
         double res = 0;
         for (int i = 0; i < v.size(); i++) {
-            res += getDistance(v[i], v[(i + 1) % v.size()]);
+            res += memo[{v[i], v[(i + 1) % v.size()]}];
         }
         return res;
     }
