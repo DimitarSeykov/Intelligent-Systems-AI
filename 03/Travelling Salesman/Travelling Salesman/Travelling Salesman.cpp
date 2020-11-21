@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <math.h>
 #include <set>
-#include <unordered_map>
+#include <map>
+#include <tuple>
 
 
 using namespace std;
@@ -126,7 +127,7 @@ public:
     }
 
     vector<pii> points;
-    unordered_map<pair<pii, pii>, double> memo;
+    map<pair<pii, pii>, double> memo;
 
 private:
     double getTotalDistance(const vector<pii>& v) {
