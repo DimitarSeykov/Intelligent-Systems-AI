@@ -223,7 +223,7 @@ private:
             child.push_back(selected[parentIdx2][i]);
         }
         for (int i = crosspoint2; i < N; i++) {
-            child.push_back(selected[parentIdx2][i]);
+            child.push_back(selected[parentIdx1][i]);
         }
 
         // printPoints(child);
