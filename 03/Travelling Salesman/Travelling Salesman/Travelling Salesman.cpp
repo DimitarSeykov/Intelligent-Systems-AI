@@ -20,7 +20,7 @@ typedef vector<vector<int>> vvi;
 typedef set<pair<double, vector<int>>> spvp;
 
 const int N = 100;
-const int SIZE = 100;
+const int SIZE = 800;
 const int GEN_SIZE = 100;
 const int SELECTION_SIZE = GEN_SIZE / 10;
 const int MUTATE_CHANCE = 20;
@@ -29,7 +29,7 @@ const int GENERATIONS = 1000;
 template <class T, class K>
 void printPair(const pair<T, K>& p) {
     // T and K need to have overloaded operator<<
-    cout << "(" << p.first << ", " << p.second << "), ";
+    cout << p.first << "," << p.second << ",";
 }
 
 
@@ -55,9 +55,9 @@ public:
             }
         }
 
-        if(N < 20){
+        // if(N < 20){
             printPoints();
-        }
+        // }
         cout << endl;
     }
 
@@ -114,7 +114,7 @@ public:
                 }
             }
         }
-        cout << "Length of MST is: " << cost << endl;
+        // cout << "Length of MST is: " << cost << endl;
     }
 
 private:
@@ -133,8 +133,10 @@ private:
         int currentGeneration = 1;
 
         while (currentGeneration < GENERATIONS) {
-            cout << currentGeneration << ": ";
+            // cout << currentGeneration << ": ";
             select(generation);
+            auto it = generation.begin();
+            printPoints((*it).second);
             currentGeneration++;
         }
 
@@ -181,7 +183,7 @@ private:
         advance(it, GEN_SIZE);
         generation.erase(it, generation.end());
         it = generation.begin();
-        cout << (*it).first << endl;
+        // cout << (*it).first << endl;
 
 
     }
@@ -314,13 +316,14 @@ int main()
     string date_time = oss.str();
 
     string filename = "output/output_" + date_time + ".txt";
-    freopen(filename.c_str(), "w", stdout);
+    string vis = "output/output_vis.txt";
+    freopen(vis.c_str(), "w", stdout);
 
-    cout << "Points: " << N <<  endl;
+    /*cout << "Points: " << N <<  endl;
     cout << "Generations size: " << GEN_SIZE << endl;
     cout << "Selection size: " << SELECTION_SIZE * 2 <<  endl;
     cout << "Mutation percent: " << MUTATE_CHANCE << endl;
-    cout << "Plane size: " << SIZE << "x" << SIZE << endl;
+    cout << "Plane size: " << SIZE << "x" << SIZE << endl;*/
     srand(time(nullptr));
 
     Solution s;
