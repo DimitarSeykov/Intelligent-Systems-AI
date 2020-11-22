@@ -199,10 +199,11 @@ private:
                 parentIdx2 = getRandomNumber(selected.size());
             } while (parentIdx1 == parentIdx2);
 
-            int crosspoint = getRandomNumber(N);
+            int crosspoint1 = getRandomNumber(N);
+            int crosspoint2 = getRandomNumber(N);
             vector<int> child1, child2;
-            generateChild(selected, child1, crosspoint, parentIdx1, parentIdx2);
-            generateChild(selected, child2, crosspoint, parentIdx2, parentIdx1);
+            generateChild(selected, child1, crosspoint1, crosspoint2, parentIdx1, parentIdx2);
+            generateChild(selected, child2, crosspoint1, crosspoint2, parentIdx2, parentIdx1);
 
             newGen.insert({ getTotalDistance(child1), child1 });
             newGen.insert({ getTotalDistance(child2), child2 });
@@ -210,24 +211,30 @@ private:
 
     }
 
-    void generateChild(const vvi& selected, vector<int>& child, int crosspoint, int parentIdx1, int parentIdx2){
-        for (int i = 0; i < crosspoint; i++) {
-                child.push_back(selected[parentIdx1][i]);
-            }
+    void generateChild(const vvi& selected, vector<int>& child, int crosspoint1, int crosspoint2, int parentIdx1, int parentIdx2){
 
-            for (int i = crosspoint; i < N; i++) {
-                child.push_back(selected[parentIdx2][i]);
-            }
+        if(crosspoint1 > crosspoint2){
+            swap(crosspoint1, crosspoint2);
+        }
+        for (int i = 0; i < crosspoint1; i++) {
+            child.push_back(selected[parentIdx1][i]);
+        }
+        for (int i = crosspoint1; i < crosspoint2; i++) {
+            child.push_back(selected[parentIdx2][i]);
+        }
+        for (int i = crosspoint2; i < N; i++) {
+            child.push_back(selected[parentIdx2][i]);
+        }
 
-            // printPoints(child);
-            if (not isValidChild(child)) {
-                makeValid(child);
-            }
+        // printPoints(child);
+        if (not isValidChild(child)) {
+            makeValid(child);
+        }
 
-            int mutation = getRandomNumber(100);
-            if (mutation < MUTATE_CHANCE) {
-                mutate(child);
-            }
+        int mutation = getRandomNumber(100);
+        if (mutation < MUTATE_CHANCE) {
+            mutate(child);
+        }
     }
 
     void mutate(vector<int>& child) {
