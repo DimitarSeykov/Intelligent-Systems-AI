@@ -14,7 +14,8 @@ def read() -> np.ndarray:
 def draw_dots(data: np.ndarray) -> np.ndarray:
     image = np.zeros((900, 900, 3))
     for t in data[0]:
-        image[int(t[1]), int(t[0])] = [255, 255, 255]
+        # image[int(t[1]), int(t[0])] = [255, 255, 255]
+        cv2.circle(image, tuple([int(t[0]), int(t[1])]), 3, (255, 255, 255), -1);
     return image
 
 def draw(data: np.ndarray):
