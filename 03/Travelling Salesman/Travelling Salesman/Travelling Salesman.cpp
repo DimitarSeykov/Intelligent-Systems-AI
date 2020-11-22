@@ -22,7 +22,7 @@ typedef set<pair<double, vector<int>>> spvp;
 const int N = 100;
 const int SIZE = 100;
 const int GEN_SIZE = 100;
-const int SELECTION_SIZE = GEN_SIZE / 20;
+const int SELECTION_SIZE = GEN_SIZE / 10;
 const int MUTATE_CHANCE = 20;
 const int GENERATIONS = 3000;
 const int MUTATE_SWAPS = 1;
