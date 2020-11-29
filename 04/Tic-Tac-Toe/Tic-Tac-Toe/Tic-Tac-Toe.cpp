@@ -36,9 +36,9 @@ public:
 
     void play() {
         printBoard();
-        while (isFinished().first == none) {
+        while (isFinished(board).first == none) {
             userInputPosition();
-            if (isFinished().first == none) {
+            if (isFinished(board).first == none) {
                 makeMove();
             }
             printBoard();
@@ -66,9 +66,8 @@ public:
     }
 
     int minMax(vvc& currentBoard, bool isMaximiser, int alpha, int beta) {
-        Game g;
-        g.board = currentBoard;
-        auto finished = g.isFinished();
+
+        auto finished = isFinished(currentBoard);
         if (finished.first != none) {
             return finished.second;
         }
@@ -119,10 +118,10 @@ public:
         }
     }
 
-    pair<WinType, int> isFinished() {
-        int row = isFinishedRows(),
-            col = isFinishedColumns(),
-            diag = isFinishedDiag();
+    pair<WinType, int> isFinished(vvc& board) {
+        int row = isFinishedRows(board),
+            col = isFinishedColumns(board),
+            diag = isFinishedDiag(board);
 
         int empty = findNumberOfEmptySpaces();
 
@@ -155,7 +154,7 @@ public:
     }
 
     vvc board;
-    int isFinishedRows() {
+    int isFinishedRows(vvc& board) {
         for (int i = 0; i < N; i++) {
             int cnt = 1;
             for (int j = 1; j < N; j++) {
@@ -170,7 +169,7 @@ public:
         return -1;
     }
 
-    int isFinishedColumns() {
+    int isFinishedColumns(vvc& board) {
         for (int i = 0; i < N; i++) {
             int cnt = 1;
             for (int j = 1; j < N; j++) {
@@ -185,7 +184,7 @@ public:
         return -1;
     }
 
-    int isFinishedDiag() {
+    int isFinishedDiag(vvc& board) {
         int cntMain = 1;
         int cntSec = 1;
         for (int i = 1; i < N; i++) {
