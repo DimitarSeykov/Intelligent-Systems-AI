@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <utility>
-#include <stdlib.h>
-#include <time.h>
+#include <limits.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -20,10 +20,6 @@ enum WinType {
     minimizer,
 
 };
-
-int getRandomNumber(int ub, int lb = 0) {
-    return rand() % ub + lb;
-}
 
 class Game {
 public:
@@ -47,16 +43,71 @@ public:
             }
             printBoard();
         }
-        cout << isFinished().first << " " << isFinished().second << endl;
     }
 
     void makeMove() {
-        int i = -1, j = -1;
-        do {
-            i = getRandomNumber(N), 
-            j = getRandomNumber(N);
-        } while (board[i][j] != EMPTY);
-        board[i][j] = O;
+        int bestPossible = INT_MAX;
+        int row = -1, col = -1;
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if (board[i][j] == EMPTY) {
+                    board[i][j] = O;
+                    int score = minMax(board, true, INT_MIN, INT_MAX);
+                    board[i][j] = EMPTY;
+                    if (score < bestPossible) {
+                        bestPossible = score;
+                        row = i;
+                        col = j;
+                    }
+                }
+            }
+        }
+        board[row][col] = O;
+    }
+
+    int minMax(vvc& currentBoard, bool isMaximiser, int alpha, int beta) {
+        Game g;
+        g.board = currentBoard;
+        auto finished = g.isFinished();
+        if (finished.first != none) {
+            return finished.second;
+        }
+
+        if (isMaximiser) {
+            int bestPossible = INT_MIN;
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (currentBoard[i][j] == EMPTY) {
+                        currentBoard[i][j] = X;
+                        int score = minMax(currentBoard, false, alpha, beta);
+                        currentBoard[i][j] = EMPTY;
+                        bestPossible = max(score, bestPossible);
+                        alpha = max(alpha, bestPossible);
+                        if (alpha >= beta) {
+                            return bestPossible;
+                        }
+                    }
+                }
+            }
+            return bestPossible;
+        } else {
+            int bestPossible = INT_MAX;
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (currentBoard[i][j] == EMPTY) {
+                        currentBoard[i][j] = O;
+                        int score = minMax(currentBoard, true, alpha, beta);
+                        currentBoard[i][j] = EMPTY;
+                        bestPossible = min(score, bestPossible);
+                        beta = min(beta, bestPossible);
+                        if (alpha >= beta) {
+                            return bestPossible;
+                        }
+                    }
+                }
+            }
+            return bestPossible;
+        }
     }
 
     void printBoard() {
@@ -95,6 +146,9 @@ public:
 
         if (winner == minimizer) {
             empty *= (-1);
+        }
+        else if (winner == tie) {
+            empty = 0;
         }
 
         return { winner, empty };
@@ -167,58 +221,20 @@ public:
         return res;
     }
 
-
-    void userInput() {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                cin >> board[i][j];
-            }
-        }
-        cout << endl;
-    }
-
     void userInputPosition() {
         int i = -1,
             j = -1;
 
         do {
             cin >> i >> j;
-        } while (board[i][j] != EMPTY);
+        } while (board[i][j] != EMPTY and i < N and j < N);
         board[i][j] = X;
     }
 };
 
 int main()
 {
-    srand(time(nullptr));
-
     Game g;
     g.play();
     
 }
-
-/*
-XOX
-XXO
-OXO
-
-XOX
-OXX
-XOO
-
-XXO
--OX
-O-X
-
--OX
--OX
-XO-
-
--OX
---X
-OOX
-
--OX
----
-OOX
-*/
