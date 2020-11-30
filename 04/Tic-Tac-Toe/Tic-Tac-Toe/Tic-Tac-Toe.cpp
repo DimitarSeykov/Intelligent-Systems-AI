@@ -9,6 +9,7 @@ using namespace std;
 typedef vector<char> vc;
 typedef vector<vector<char>> vvc;
 
+const bool COMPUTER_FIRST = false;
 const int N = 3;
 const char EMPTY = '-';
 const char X = 'X';
@@ -37,11 +38,22 @@ public:
     void play() {
         printBoard();
         while (isFinished(board).first == none) {
-            userInputPosition();
-            if (isFinished(board).first == none) {
+            if(!COMPUTER_FIRST){
+                userInputPosition();
+                printBoard();
+                if (isFinished(board).first == none) {
+                    makeMove();
+                    printBoard();
+                }
+            } else {
                 makeMove();
+                printBoard();
+                if (isFinished(board).first == none){
+                    userInputPosition();
+                    printBoard();
+                }
             }
-            printBoard();
+
         }
     }
 
@@ -52,7 +64,7 @@ public:
             for (int j = 0; j < N; j++) {
                 if (board[i][j] == EMPTY) {
                     board[i][j] = O;
-                    int score = minMax(board, true, INT_MIN, INT_MAX);
+                    int score = minMax(board, !COMPUTER_FIRST, INT_MIN, INT_MAX);
                     board[i][j] = EMPTY;
                     if (score < bestPossible) {
                         bestPossible = score;
@@ -62,7 +74,7 @@ public:
                 }
             }
         }
-        board[row][col] = O;
+        board[row][col] = COMPUTER_FIRST ? X : O;
     }
 
     int minMax(vvc& currentBoard, bool isMaximiser, int alpha, int beta) {
@@ -227,7 +239,7 @@ public:
         do {
             cin >> i >> j;
         } while (board[i][j] != EMPTY and i < N and j < N);
-        board[i][j] = X;
+        board[i][j] = COMPUTER_FIRST ? O : X;
     }
 };
 
@@ -235,5 +247,5 @@ int main()
 {
     Game g;
     g.play();
-    
+
 }
