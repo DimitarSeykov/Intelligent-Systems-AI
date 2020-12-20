@@ -53,7 +53,7 @@ def get_probability(data: np.ndarray, fold: tuple, basic_percentages: tuple) -> 
         prod_dem = basic_percentages[0]
         prod_rep = basic_percentages[1]
         for i in range(COLS):
-            if fold == 0:
+            if i == 0:
                 continue
             if vote[i] == "?":
                 continue
@@ -70,7 +70,6 @@ def get_probability(data: np.ndarray, fold: tuple, basic_percentages: tuple) -> 
             sum = count_dem + count_rep
             prod_dem *= (count_dem / sum)
             prod_rep *= (count_rep / sum)
-            result = "unknown"
 
         result = "unknown"
         if prod_dem > prod_rep:
@@ -80,7 +79,6 @@ def get_probability(data: np.ndarray, fold: tuple, basic_percentages: tuple) -> 
 
         if result == vote[0]:
             correct_guesses += 1
-        # print(prod_dem, " ", prod_rep)
 
     total = fold[1] - fold[0] + 1
     accuracy = correct_guesses / total
