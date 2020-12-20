@@ -31,8 +31,8 @@ def make_splits() -> list:
 
 
 def get_basic_percents(data: np.ndarray, fold: tuple) -> tuple:
-    count_dem = 0;
-    count_rep = 0;
+    count_dem = 0
+    count_rep = 0
     total = ROWS
     for i in range(ROWS):
         if fold[0] <= i <= fold[1]:
@@ -57,8 +57,8 @@ def get_probability(data: np.ndarray, fold: tuple, basic_percentages: tuple) -> 
                 continue
             if vote[i] == "?":
                 continue
-            count_dem = 1
-            count_rep = 1
+            count_dem = 0
+            count_rep = 0
             for j in range(ROWS):
                 if fold[0] <= j <= fold[1]:
                     continue
