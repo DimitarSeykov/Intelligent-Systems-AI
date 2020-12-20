@@ -55,6 +55,8 @@ def get_probability(data: np.ndarray, fold: tuple, basic_percentages: tuple) -> 
         for i in range(COLS):
             if fold == 0:
                 continue
+            if vote[i] == "?":
+                continue
             count_dem = 1
             count_rep = 1
             for j in range(ROWS):
